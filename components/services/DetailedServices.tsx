@@ -1,5 +1,4 @@
-import { Button } from '../ui/button';
-import { Monitor, PenTool, Image as ImageIcon, MessageSquare, ArrowRight, CheckCircle2 } from 'lucide-react';
+import { Monitor, PenTool, Image as ImageIcon, MessageSquare, CheckCircle2 } from 'lucide-react';
 
 const services = [
   {
@@ -90,12 +89,6 @@ export function DetailedServices() {
                     </li>
                   ))}
                 </ul>
-
-                {/* <div className="pt-6">
-                  <Button className="bg-deep-sage hover:bg-deep-sage/90 text-white font-ui font-medium rounded-md px-8 py-6 h-auto text-lg gap-2">
-                    Get Started <ArrowRight className="w-5 h-5" />
-                  </Button>
-                </div> */}
               </div>
             </div>
           ))}
