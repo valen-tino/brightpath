@@ -1,4 +1,5 @@
 import { useForm } from 'react-hook-form';
+import { useState } from 'react';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
 import { Button } from '../components/ui/button';
@@ -19,8 +20,9 @@ import {
   SelectTrigger,
   SelectValue,
 } from '../components/ui/select';
-import { Mail, MapPin, Phone, Loader2 } from 'lucide-react';
+import { Mail, MapPin, Phone, Loader2, CheckCircle2, AlertTriangle } from 'lucide-react';
 import { toast } from 'sonner';
+import { Alert, AlertDescription, AlertTitle } from '../components/ui/alert';
 
 const formSchema = z.object({
   name: z.string().min(2, {
@@ -38,6 +40,9 @@ const formSchema = z.object({
 });
 
 export default function Contact() {
+  const [status, setStatus] = useState<'idle' | 'success' | 'error'>('idle');
+  const [statusMessage, setStatusMessage] = useState('');
+
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -48,14 +53,41 @@ export default function Contact() {
   });
 
   async function onSubmit(values: z.infer<typeof formSchema>) {
-    // Simulate backend delay
-    await new Promise((resolve) => setTimeout(resolve, 1500));
-    
-    console.log(values);
-    toast.success("Message sent successfully!", {
-      description: "We'll get back to you within 24 hours."
+    setStatus('idle');
+    setStatusMessage('');
+
+    try {
+      await new Promise((resolve) => setTimeout(resolve, 1500));
+
+      console.log(values);
+      toast.success("Message sent successfully!", {
+        description: (
+          <span className="text-muted-foreground">We'll get back to you within 24 hours.</span>
+        ),
+      });
+      setStatus('success');
+      setStatusMessage("We received your message. You can expect a reply within one business day.");
+      form.reset();
+    } catch (error) {
+      console.error(error);
+      toast.error("We couldn't send your message.", {
+        description: (
+          <span className="text-muted-foreground">Please try again in a moment or email us directly at hello@brightpath.com.</span>
+        ),
+      });
+      setStatus('error');
+      setStatusMessage("We couldn't send your message. Please try again.");
+    }
+  }
+
+  function onInvalid() {
+    setStatus('error');
+    setStatusMessage('Please fix the highlighted fields and try again.');
+    toast.error('Some inputs are incorrect.', {
+      description: (
+        <span className="text-muted-foreground">Check the fields marked in red.</span>
+      ),
     });
-    form.reset();
   }
 
   return (
@@ -114,7 +146,7 @@ export default function Contact() {
           {/* Contact Form */}
           <div className="bg-white p-8 md:p-10 rounded-2xl shadow-sm border border-border">
             <Form {...form}>
-              <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+              <form onSubmit={form.handleSubmit(onSubmit, onInvalid)} className="space-y-6">
                 <FormField
                   control={form.control}
                   name="name"
@@ -177,7 +209,7 @@ export default function Contact() {
                       <FormControl>
                         <Textarea 
                           placeholder="Tell us about your project..." 
-                          className="min-h-[120px] bg-warm-cream/50 border-input focus:border-deep-sage resize-y" 
+                          className="min-h-30 bg-warm-cream/50 border-input focus:border-deep-sage resize-y" 
                           {...field} 
                         />
                       </FormControl>
@@ -200,6 +232,22 @@ export default function Contact() {
                     "Send Message"
                   )}
                 </Button>
+
+                {status === 'success' && (
+                  <Alert className="border-green-200 bg-green-50 text-green-800">
+                    <CheckCircle2 className="h-5 w-5" />
+                    <AlertTitle>Message sent</AlertTitle>
+                    <AlertDescription>{statusMessage}</AlertDescription>
+                  </Alert>
+                )}
+
+                {status === 'error' && statusMessage && (
+                  <Alert variant="destructive" className="border-red-200 bg-red-50 text-red-800">
+                    <AlertTriangle className="h-5 w-5" />
+                    <AlertTitle>There was an issue</AlertTitle>
+                    <AlertDescription>{statusMessage}</AlertDescription>
+                  </Alert>
+                )}
               </form>
             </Form>
           </div>
